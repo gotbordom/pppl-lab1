@@ -223,7 +223,7 @@ class Lab1Spec(lab1: Lab1Like) extends FlatSpec {
   // Eval
 
   "eval+" should "perform addition" in {
-    assert(eval("1 + 1") === 2)
+    assert(eval("1 + 1") ===   2)
   }
 
   "eval-" should "perform subtraction" in {

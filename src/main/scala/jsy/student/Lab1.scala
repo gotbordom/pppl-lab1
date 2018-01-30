@@ -8,9 +8,9 @@ object Lab1 extends jsy.util.JsyApplication with jsy.lab1.Lab1Like {
 
   /*
    * CSCI 3155: Lab 1
-   * <Your Name>
+   * <Anthony Tracy>
    *
-   * Partner: <Your Partner's Name>
+   * Partner: <Cassie>
    * Collaborators: <Any Collaborators>
    */
 
@@ -55,17 +55,34 @@ object Lab1 extends jsy.util.JsyApplication with jsy.lab1.Lab1Like {
 
   /* Exercises */
 
-  def abs(n: Double): Double = ???
+  def abs(n: Double): Double = {
+    if(n<0){-1 * n} else n
+  }
 
-  def xor(a: Boolean, b: Boolean): Boolean = ???
+  def xor(a: Boolean, b: Boolean): Boolean = a ^ b
 
-  def repeat(s: String, n: Int): String = ???
+  def repeat(s: String, n: Int): String = {
+    require(n>=0)
+    if(n>0){s+repeat(s,n-1)} else ""
+  }
 
-  def sqrtStep(c: Double, xn: Double): Double = ???
+  def sqrtStep(c: Double, xn: Double): Double = {
+    //Solving for x_n+1:
+    // This is a helper function for later use, so
+    // assumption is that c>0 always
+    xn-(xn*xn-c)/(2*xn)
+  }
 
-  def sqrtN(c: Double, x0: Double, n: Int): Double = ???
+  def sqrtN(c: Double, x0: Double, n: Int): Double = {
+    require(n>=0)
+    if(n>0){sqrtN(c,sqrtStep(c,x0),n-1)} else x0
+  }
 
-  def sqrtErr(c: Double, x0: Double, epsilon: Double): Double = ???
+  def sqrtErr(c: Double, x0: Double, epsilon: Double): Double = {
+    require(epsilon>0)  // So >=0 allows for 0 error which... is highly unlikley (would need inf runs) so getting rid of that possability.
+    val e = sqrtStep(c,x0)
+    if(abs(e*e-c)>epsilon){sqrtErr(c,e,epsilon)} else e
+  }
 
   def sqrt(c: Double): Double = {
     require(c >= 0)
@@ -80,15 +97,26 @@ object Lab1 extends jsy.util.JsyApplication with jsy.lab1.Lab1Like {
   // case object Empty extends SearchTree
   // case class Node(l: SearchTree, d: Int, r: SearchTree) extends SearchTree
 
+  // Am I allowed to define check outside this function so I can use it for insert?
   def repOk(t: SearchTree): Boolean = {
     def check(t: SearchTree, min: Int, max: Int): Boolean = t match {
       case Empty => true
-      case Node(l, d, r) => ???
+      case Node(l, d, r) =>
+        if (d < min || d > max) false
+        else {
+          check(l, min, d - 1) & check(r, d, max)
+        }
     }
     check(t, Int.MinValue, Int.MaxValue)
   }
 
-  def insert(t: SearchTree, n: Int): SearchTree = ???
+  def insert(t: SearchTree, n: Int): SearchTree = {
+    // make sure it is a BST to start..?
+    (t: @unchecked) match {
+      case Empty => Node(Empty, n, Empty)
+      case Node(l, d, r) => if(n < d) Node(insert(l, n),d,r) else Node(l,d,insert(r, n))
+    }
+  }
 
   def deleteMin(t: SearchTree): (SearchTree, Int) = {
     require(t != Empty)
@@ -96,17 +124,34 @@ object Lab1 extends jsy.util.JsyApplication with jsy.lab1.Lab1Like {
       case Node(Empty, d, r) => (r, d)
       case Node(l, d, r) =>
         val (l1, m) = deleteMin(l)
-        ???
+        (Node(l1,d,r),m)
     }
   }
 
-  def delete(t: SearchTree, n: Int): SearchTree = ???
+  def delete(t: SearchTree, n: Int): SearchTree = (t: @unchecked) match {
+    case Node(Empty,d,Empty) =>
+      if(d==n) Empty else t
+    case Node(Empty,d,r) =>
+      if(d==n) r else Node(Empty,d,delete(r,n))
+    case Node(l,d,Empty) =>
+      if(d==n) l else Node(delete(l,n),d,Empty)
+    case Node(l, d, r) =>
+      if(d==n) {
+        val (r1,m)=deleteMin(r)
+        Node(l,m,r1)
+      } else Node(delete(l,n),d,delete(r,n))
+  }
+
 
   /* JavaScripty */
 
   def eval(e: Expr): Double = e match {
-    case N(n) => ???
-    case _ => ???
+    case N(n) => n
+    case Unary(Neg,e1) => -1*eval(e1)
+    case Binary(Plus,e1,e2) => eval(e1)+eval(e2)
+    case Binary(Minus,e1,e2) => eval(e1)-eval(e2)
+    case Binary(Times,e1,e2) => eval(e1)*eval(e2)
+    case Binary(Div,e1,e2) => eval(e1)/eval(e2)
   }
 
  // Interface to run your interpreter from a string.  This is convenient
